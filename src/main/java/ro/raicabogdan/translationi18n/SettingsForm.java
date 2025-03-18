@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.eclipse.jgit.annotations.Nullable;
 import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NotNull;
 import ro.raicabogdan.translationi18n.util.VirtualFileUtil;
 
 import javax.swing.*;
@@ -21,6 +22,7 @@ import java.util.Objects;
 
 public class SettingsForm implements Configurable {
     private final Project project;
+    private boolean restartNeeded = false;
     private JCheckBox pluginEnabled;
 
     private JPanel panel;
@@ -58,6 +60,13 @@ public class SettingsForm implements Configurable {
 
     @Override
     public boolean isModified() {
+        if (!pluginEnabled.isSelected() == getSettings().pluginEnabled
+            || !displayTranslation.isSelected() == getSettings().displayTranslation
+            || !this.defaultLanguage.getText().equals(getSettings().defaultLanguage)
+        ) {
+            restartNeeded = true;
+        }
+
         return !pluginEnabled.isSelected() == getSettings().pluginEnabled
                 || !this.pathToTranslationTextField.getText().equals(getSettings().pathToTranslation)
                 || !displayTranslation.isSelected() == getSettings().displayTranslation
@@ -77,6 +86,12 @@ public class SettingsForm implements Configurable {
         getSettings().defaultLanguage = defaultLanguage.getText();
         getSettings().fileExtensions = fileExtensionTextField.getText();
         getSettings().defaultFnName = defaultFnName.getText();
+
+        if (restartNeeded) {
+            if (project != null) {
+                RestartNotification.showRestartNotification(project);
+            }
+        }
     }
 
     @Override

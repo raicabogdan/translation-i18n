@@ -100,6 +100,7 @@ return [
                 implementation="ro.raicabogdan.translationi18n.translation.TranslationCompletionContributor$GotoDeclaration"/>
 
         <fileBasedIndex implementation="ro.raicabogdan.translationi18n.indexing.TranslationKeyIndex"/>
+        <notificationGroup id="ro.raicabogdan.translationi18n.translation.RestartGroup" displayType="BALLOON" />
     </extensions>
 
     <actions>

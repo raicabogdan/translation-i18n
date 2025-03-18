@@ -45,7 +45,7 @@ public class LanguageFileLoader {
             String locale = this.extractLocaleFromFile(file.getAbsolutePath());
             if (locale != null) {
                 if (locale.equals(settings.defaultLanguage)) {
-                    locales.putFirst(locale, file.getAbsolutePath());
+                    putFirst(locales, locale, file.getAbsolutePath());
                 } else {
                     locales.put(locale, file.getAbsolutePath());
                 }
@@ -67,5 +67,13 @@ public class LanguageFileLoader {
             }
         }
         return null;
+    }
+
+    public static <K, V> void putFirst(LinkedHashMap<K, V> map, K key, V value) {
+        LinkedHashMap<K, V> newMap = new LinkedHashMap<>();
+        newMap.put(key, value);
+        newMap.putAll(map);
+        map.clear();
+        map.putAll(newMap);
     }
 }

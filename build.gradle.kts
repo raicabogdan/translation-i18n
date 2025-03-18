@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "ro.raicabogdan.translation-i18n"
-version = "2025-3.18" // my version
+version = "2025-3.18.1" // my version
 
 repositories {
     mavenCentral()
@@ -15,7 +15,7 @@ repositories {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
     version.set("2024.1")
-    type.set("IU") // Target IDE Platform
+    type.set("PS") // Target IDE Platform
 
     plugins.set(listOf("com.jetbrains.php:241.14494.240", "com.jetbrains.twig:241.14494.240"))
 }
@@ -31,7 +31,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("241.14494")
+        sinceBuild.set("241.14494.237")
         untilBuild.set("")
     }
 
