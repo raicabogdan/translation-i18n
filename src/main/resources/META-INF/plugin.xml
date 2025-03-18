@@ -1,0 +1,115 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>ro.raicabogdan.translationi18n</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>Translation-I18n</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="bogdan.raica@trustnetsolutions.ro" url="https://github.com/raicabogdan">Vasile Bogdan Raica</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description><![CDATA[
+<h2>Translation-I18n is a plugin created to easily manage your translation files</h2>
+<p>I have created this mainly for my personal usage in Phalcon framework / Translate component, but this plugin can easily be used in any PHP based or Twig based application.</p>
+<h2>Key features</h2>
+<ul>
+    <li>Using php array files to store translations</li>
+    <li>Select the translation folder path where the plugin will lookup translation files.</li>
+    <li>Autocomplete support in selected file extensions.</li>
+    <li>You can select the text you wish to translate, then use Actions / Add Translation action to add a new translation directly from your editor. You can also set <b>key shortcuts</b> for more ease.</li>
+    <li>Optionally you can select to show translation text in autocomplete. [<b>Requires index invalidation</b>]</li>
+    <li>Ability to select the default language in which your application works. [<b>Requires index invalidation</b>]</li>
+    <li>Allows the option to select the preferred <em>quotes</em> used in your application</li>
+    <li>Allows the option to choose any file extensions as long as the particular file is associated with either PHP or Twig file type.</li>
+    <li>Allows the option to set your own translation function name when generating translation in Twig associated files, auto generating the entire translation code automatically.</li>
+</ul>
+<h2>Translation folder structure</h2>
+<p>The translation folder structure has 2 options. Before that, ensure the folder translation path is added correctly.</p>
+<p>You are optionally given the following structure to use, in this example, the translation path will be "translation"</p>
+
+<ol>
+<li>Using pattern translationPath/code/messages.php</li>
+</ol>
+<pre>
+    translation
+    ├── de
+    │   └── messages.php
+    ├── en
+    │   └── messages.php
+    ├── it
+    │   └── messages.php
+    └── ro
+        └── messages.php
+</pre>
+<ol>
+<li>Using pattern translationPath/messages.code.php</li>
+</ol>
+<pre>
+    translation
+    ├── messages.de.php
+    ├── messages.en.php
+    ├── messages.it.php
+    └── messages.ro.php
+</pre>
+<p>The plugin will scan these paths and will index only the default selected language file translation keys.</p>
+<h2>Example of content inside a translation file</h2>
+<pre>
+&lt;?php
+
+return [
+    'title_login'     => 'Login',
+    'label_username'  => 'Username',
+    'input_username'  => 'Username',
+    'label_password'  => 'Password',
+    'label_btn_login' => 'Login',
+];
+
+</pre>
+  ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.jetbrains.php</depends>
+    <depends>com.jetbrains.twig</depends>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity
+                implementation="ro.raicabogdan.translationi18n.TranslationI18nProjectComponent$PostStartupActivity"/>
+
+        <projectConfigurable instance="ro.raicabogdan.translationi18n.SettingsForm"
+                             displayName="Translation I18n"
+                             id="translationi18n.SettingsForm"
+                             parentId="reference.webide.settings.project.settings.php"
+                             nonDefaultProject="true"
+        />
+
+        <completion.contributor language="PHP"
+                                implementationClass="ro.raicabogdan.translationi18n.translation.TranslationCompletionContributor$Completion"/>
+        <completion.contributor language="Twig"
+                                implementationClass="ro.raicabogdan.translationi18n.translation.TranslationCompletionContributor$Completion"/>
+
+        <gotoDeclarationHandler
+                implementation="ro.raicabogdan.translationi18n.translation.TranslationCompletionContributor$GotoDeclaration"/>
+
+        <fileBasedIndex implementation="ro.raicabogdan.translationi18n.indexing.TranslationKeyIndex"/>
+    </extensions>
+
+    <actions>
+        <action id="translationi18n.TranslationGenerator"
+                class="ro.raicabogdan.translationi18n.action.TranslationGeneratorAction"
+                text="Add Translation"
+                description="Add a new translation key and values"
+                icon="AllIcons.Actions.Edit">
+            <add-to-group group-id="EditorPopupMenu" anchor="before" relative-to-action="RenameElement"/>
+        </action>
+    </actions>
+
+</idea-plugin>
