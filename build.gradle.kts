@@ -15,7 +15,7 @@ repositories {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
     version.set("2024.1")
-    type.set("IC") // Target IDE Platform
+    type.set("IU") // Target IDE Platform
 
     plugins.set(listOf("com.jetbrains.php:241.14494.240", "com.jetbrains.twig:241.14494.240"))
 }
