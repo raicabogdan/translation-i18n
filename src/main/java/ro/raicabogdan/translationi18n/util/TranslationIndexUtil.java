@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 
 public class TranslationIndexUtil {
-    private static PsiFile translationPsiFile;
     public static Map<String, String> getAllTranslations(Project project) {
         Map<String, String> translations = new HashMap<>();
         FileBasedIndex index = FileBasedIndex.getInstance();
@@ -37,12 +36,16 @@ public class TranslationIndexUtil {
     }
 
     public static @Nullable PsiElement getPsiElement(Project project, String translationKey) {
+        TranslationPsiFileCacheService cacheService = project.getService(TranslationPsiFileCacheService.class);
         PsiFile psiFile;
-        if (translationPsiFile == null) {
-            psiFile = getTranslationFile(project);
+        PsiFile cachedFile = cacheService.getTranslationPsiFile();
+
+        if (cachedFile != null && cachedFile.isValid()) {
+            psiFile = cachedFile;
         } else {
-            psiFile = translationPsiFile;
+            psiFile = getTranslationFile(project);
         }
+
         if (psiFile != null) {
             for (PsiElement element : psiFile.getChildren()) {
                 int singleQuoteOffset = element.getText().indexOf("'" + translationKey + "'");
@@ -67,6 +70,7 @@ public class TranslationIndexUtil {
     }
 
     private @Nullable static PsiFile getTranslationFile(Project project) {
+        TranslationPsiFileCacheService cacheService = project.getService(TranslationPsiFileCacheService.class);
         Settings settings = Settings.getInstance(project);
         if (settings.defaultLanguage.isEmpty() || settings.pathToTranslation.isEmpty()) {
             return null;
@@ -81,8 +85,8 @@ public class TranslationIndexUtil {
             return null;
         }
 
-        translationPsiFile = PsiManager.getInstance(project).findFile(translationFile);
+        cacheService.setTranslationPsiFile(PsiManager.getInstance(project).findFile(translationFile));
 
-        return translationPsiFile;
+        return cacheService.getTranslationPsiFile();
     }
 }

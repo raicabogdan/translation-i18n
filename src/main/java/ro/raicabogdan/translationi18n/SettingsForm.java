@@ -11,7 +11,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.eclipse.jgit.annotations.Nullable;
 import org.jetbrains.annotations.Nls;
-import org.jetbrains.annotations.NotNull;
+import ro.raicabogdan.translationi18n.util.NotificationUtil;
 import ro.raicabogdan.translationi18n.util.VirtualFileUtil;
 
 import javax.swing.*;
@@ -62,18 +62,18 @@ public class SettingsForm implements Configurable {
     public boolean isModified() {
         if (!pluginEnabled.isSelected() == getSettings().pluginEnabled
             || !displayTranslation.isSelected() == getSettings().displayTranslation
-            || !this.defaultLanguage.getText().equals(getSettings().defaultLanguage)
+            || !defaultLanguage.getText().equals(getSettings().defaultLanguage)
         ) {
             restartNeeded = true;
         }
 
         return !pluginEnabled.isSelected() == getSettings().pluginEnabled
-                || !this.pathToTranslationTextField.getText().equals(getSettings().pathToTranslation)
+                || !pathToTranslationTextField.getText().equals(getSettings().pathToTranslation)
                 || !displayTranslation.isSelected() == getSettings().displayTranslation
                 || !Objects.requireNonNull(preferredQuotes.getSelectedItem()).toString().equals(getSettings().preferredQuotes)
-                || !this.fileExtensionTextField.getText().equals(getSettings().fileExtensions)
-                || !this.defaultLanguage.getText().equals(getSettings().defaultLanguage)
-                || !this.defaultFnName.getText().equals(getSettings().defaultFnName);
+                || !fileExtensionTextField.getText().equals(getSettings().fileExtensions)
+                || !defaultLanguage.getText().equals(getSettings().defaultLanguage)
+                || !defaultFnName.getText().equals(getSettings().defaultFnName);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class SettingsForm implements Configurable {
 
         if (restartNeeded) {
             if (project != null) {
-                RestartNotification.showRestartNotification(project);
+                NotificationUtil.showRestartNotification(project);
             }
         }
     }

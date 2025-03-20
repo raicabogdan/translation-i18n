@@ -7,6 +7,7 @@ import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import org.jetbrains.annotations.NotNull;
 import ro.raicabogdan.translationi18n.Settings;
+import ro.raicabogdan.translationi18n.TranslationI18nProjectComponent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +21,8 @@ public class TranslationKeyIndex extends FileBasedIndexExtension<String, String>
 
     private final DataIndexer<String, String, FileContent> indexer = inputData -> {
         Map<String, String> map = new HashMap<>();
-        if (inputData.getProject() == null) {
-            return map; // No project context, don't index
+        if (!TranslationI18nProjectComponent.isEnabled(inputData.getProject())) {
+            return map;
         }
 
         Settings settings = Settings.getInstance(inputData.getProject());

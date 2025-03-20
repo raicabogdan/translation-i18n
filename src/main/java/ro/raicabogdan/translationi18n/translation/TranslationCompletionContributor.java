@@ -4,7 +4,6 @@ import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
@@ -16,14 +15,14 @@ import com.jetbrains.twig.elements.TwigCompositeElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ro.raicabogdan.translationi18n.Settings;
+import ro.raicabogdan.translationi18n.TranslationI18nProjectComponent;
 import ro.raicabogdan.translationi18n.util.PhpElementsUtil;
 import ro.raicabogdan.translationi18n.util.TranslationIndexUtil;
 
 import java.util.*;
 
 public class TranslationCompletionContributor {
-    public static class Completion extends CompletionContributor
-            implements DumbAware {
+    public static class Completion extends CompletionContributor {
         public Completion() {
             // __('<caret>', []);
             // t->_('<caret>', []);
@@ -38,13 +37,13 @@ public class TranslationCompletionContributor {
                                               @NotNull ProcessingContext context,
                                               @NotNull CompletionResultSet result) {
                     PsiElement element = parameters.getOriginalPosition();
-
                     if (element == null || (
                             !(element.getParent() instanceof StringLiteralExpression)
                                     && !(element.getParent() instanceof TwigCompositeElement)
                     )) {
                         return;
                     }
+
                     PsiFile file = element.getContainingFile();
                     Settings settings = Settings.getInstance(file.getProject());
 
@@ -59,7 +58,9 @@ public class TranslationCompletionContributor {
                     }
                     // Extract file extension
                     int dotIndex = fileName.lastIndexOf('.');
-                    if (dotIndex == -1) return;
+                    if (dotIndex == -1) {
+                        return;
+                    }
                     String fileExtension = fileName.substring(dotIndex + 1).toLowerCase(); // Ensure lowercase comparison
                     // Check if the file extension is allowed
                     if (!allowedExtensions.contains(fileExtension)) {
@@ -67,20 +68,25 @@ public class TranslationCompletionContributor {
                     }
 
                     PsiElement parent = element.getParent();
-                    String functionName;
+                    boolean showAutoComplete = false;
                     if (parent instanceof TwigCompositeElement twigElem) {
-                        functionName = getVoltMethodName(twigElem);
+                        showAutoComplete = checkTwigContext(twigElem);
                     } else {
                         PsiElement grandParent = parent.getParent().getParent();
 
                         if (!(grandParent instanceof FunctionReference functionReference)) {
                             return;
                         }
-                        functionName = functionReference.getName();
-
+                        String functionName = functionReference.getName();
+                        if (functionName == null) {
+                            return;
+                        }
+                        if (functionName.equals(settings.defaultFnName) || functionName.equals("__") || functionName.equals("_")) {
+                            showAutoComplete = true;
+                        }
                     }
 
-                    if (!"__".equals(functionName) && !"_".equals(functionName)) {
+                    if (!showAutoComplete) {
                         return;
                     }
 
@@ -94,14 +100,24 @@ public class TranslationCompletionContributor {
             });
         }
 
-        private String getVoltMethodName(TwigCompositeElement element) {
+        private boolean checkTwigContext(TwigCompositeElement element) {
+            String userFnc = Settings.getInstance(element.getProject()).defaultFnName;
             // __('title_login')
-            String method = element.getFirstChild().getText();
-            if (method.equals("t")) {
-                // t._('title')
-                method = element.getFirstChild().getNextSibling().getNextSibling().getText();
+            // t._('title')
+            // userFnc('title)
+            if (element.getFirstChild().getContext() != null) {
+                String method = element.getFirstChild().getContext().getText();
+                return method != null &&
+                        (method.startsWith(userFnc + "('")
+                                || method.startsWith(userFnc + "(\"")
+                                || method.startsWith("__('")
+                                || method.startsWith("__(\"")
+                                || method.startsWith("t._('")
+                                || method.startsWith("t._(\"")
+                        );
             }
-            return method;
+
+            return false;
         }
     }
 
@@ -111,10 +127,10 @@ public class TranslationCompletionContributor {
             if (sourceElement != null &&
                     (sourceElement.getParent() instanceof StringLiteralExpression || sourceElement.getParent() instanceof TwigCompositeElement) &&
                     (PhpElementsUtil.getParameterInsideMethodReferencePattern().accepts(sourceElement)
-                        || PhpElementsUtil.getParameterInsideNewExpressionPattern().accepts(sourceElement)
-                        || PhpElementsUtil.getParameterInsideFunctionReferencePattern().accepts(sourceElement)
-                        || PhpElementsUtil.getParameterInsideTwigFunctionReferencePattern().accepts(sourceElement)
-            )) {
+                            || PhpElementsUtil.getParameterInsideNewExpressionPattern().accepts(sourceElement)
+                            || PhpElementsUtil.getParameterInsideFunctionReferencePattern().accepts(sourceElement)
+                            || PhpElementsUtil.getParameterInsideTwigFunctionReferencePattern().accepts(sourceElement)
+                    )) {
                 Collection<PsiElement> psiElements = new ArrayList<>();
 
                 Project project = sourceElement.getProject();
@@ -123,10 +139,10 @@ public class TranslationCompletionContributor {
                         .replace("'", "").replace("\"", ""); // Strip quotes
 
                 PsiElement psiElement = TranslationIndexUtil.getPsiElement(project, translationKey);
-
-                if (psiElement == null) {
+                if (!TranslationI18nProjectComponent.psiElementIsValid(psiElement)) {
                     return null;
                 }
+
                 psiElements.add(psiElement);
 
                 return psiElements.toArray(new PsiElement[0]);

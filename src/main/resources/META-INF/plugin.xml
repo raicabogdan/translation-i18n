@@ -81,8 +81,12 @@ return [
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <postStartupActivity
-                implementation="ro.raicabogdan.translationi18n.TranslationI18nProjectComponent$PostStartupActivity"/>
+        <postStartupActivity implementation="ro.raicabogdan.translationi18n.TranslationI18nProjectComponent$PostStartupActivity"/>
+        <projectService serviceImplementation="ro.raicabogdan.translationi18n.Settings"/>
+        <projectService
+                serviceInterface="ro.raicabogdan.translationi18n.util.TranslationPsiFileCacheService"
+                serviceImplementation="ro.raicabogdan.translationi18n.util.TranslationPsiFileCacheServiceImpl"/>
+
 
         <projectConfigurable instance="ro.raicabogdan.translationi18n.SettingsForm"
                              displayName="Translation I18n"
@@ -100,7 +104,7 @@ return [
                 implementation="ro.raicabogdan.translationi18n.translation.TranslationCompletionContributor$GotoDeclaration"/>
 
         <fileBasedIndex implementation="ro.raicabogdan.translationi18n.indexing.TranslationKeyIndex"/>
-        <notificationGroup id="ro.raicabogdan.translationi18n.translation.RestartGroup" displayType="BALLOON" />
+        <notificationGroup id="ro.raicabogdan.translationi18n" displayType="BALLOON" />
     </extensions>
 
     <actions>

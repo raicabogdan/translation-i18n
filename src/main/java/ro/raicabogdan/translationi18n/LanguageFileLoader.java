@@ -12,18 +12,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LanguageFileLoader {
-    private static Project project;
     private final LinkedHashMap<String, String> locales = new LinkedHashMap<>();
-
-    public LanguageFileLoader(Project project) {
-        LanguageFileLoader.project = project;
-    }
 
     public LinkedHashMap<String, String> getLocales() {
         return locales;
     }
 
-    public List<String> getLanguageFiles() {
+    public List<String> getLanguageFiles(Project project) {
         Settings settings = Settings.getInstance(project);
         String basePath = project.getBasePath();
         String translationPath = settings != null ? basePath + "/" + settings.pathToTranslation : "";
@@ -42,7 +37,7 @@ public class LanguageFileLoader {
         List<File> files = FileUtil.findFilesByMask(Pattern.compile(".*\\.php"), dir);
 
         for (File file : files) {
-            String locale = this.extractLocaleFromFile(file.getAbsolutePath());
+            String locale = extractLocaleFromFile(file.getAbsolutePath());
             if (locale != null) {
                 if (locale.equals(settings.defaultLanguage)) {
                     putFirst(locales, locale, file.getAbsolutePath());

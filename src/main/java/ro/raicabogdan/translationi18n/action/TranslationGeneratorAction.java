@@ -59,10 +59,10 @@ public class TranslationGeneratorAction extends AnAction {
             return;
         }
 
-        LanguageFileLoader languageFileLoader = new LanguageFileLoader(project);
+        LanguageFileLoader languageFileLoader = new LanguageFileLoader();
 
         // Get language files
-        List<String> languageFiles = languageFileLoader.getLanguageFiles();
+        List<String> languageFiles = languageFileLoader.getLanguageFiles(project);
         if (languageFiles.isEmpty()) {
             Messages.showMessageDialog("No language files found!", "Error", Messages.getErrorIcon());
             return;
@@ -130,8 +130,11 @@ public class TranslationGeneratorAction extends AnAction {
         if (!(psiFile instanceof PhpFile)) {
             return;
         }
+
         ArrayCreationExpression translationArrayExpr = PsiTreeUtil.findChildOfType(psiFile, ArrayCreationExpression.class);
-        if (translationArrayExpr == null) return;
+        if (translationArrayExpr == null) {
+            return;
+        }
 
         boolean useSingleQuotes = preferredQuotes.equals("single"); // Fetch from settings if needed
         String arrayElementText = useSingleQuotes
